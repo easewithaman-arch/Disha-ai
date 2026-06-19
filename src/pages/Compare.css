@@ -1,0 +1,598 @@
+/* ============================================
+   DISHA AI — Compare Career Paths Page
+   ============================================ */
+
+/* ── Page ── */
+.compare-page {
+  padding-bottom: 40px;
+}
+
+/* ── Header ── */
+.compare-header {
+  text-align: center;
+  padding: 48px 0 24px;
+}
+
+.compare-header .section-subtitle {
+  margin: 0 auto;
+}
+
+/* ── Selector Bar ── */
+.compare-selectors {
+  margin-bottom: 40px;
+}
+
+.compare-selectors__row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.compare-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-radius: var(--radius-full);
+  min-width: 240px;
+  position: relative;
+  border: 1px solid var(--border-light);
+}
+
+.compare-selector:hover {
+  transform: translateY(-2px);
+}
+
+.compare-selector__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.compare-selector__select {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0 center;
+}
+
+.compare-selector__select option {
+  background: #1a1a3e;
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+.compare-selector__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.compare-selector__remove:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.compare-selector--add {
+  cursor: pointer;
+  justify-content: center;
+  border-style: dashed;
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  gap: 8px;
+  min-width: 160px;
+  transition: all var(--transition-normal);
+}
+
+.compare-selector--add:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.05);
+}
+
+/* ── Comparison Grid ── */
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), 1fr);
+  gap: 24px;
+  margin-bottom: 56px;
+}
+
+.compare-card {
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  position: relative;
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+.compare-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), 0 0 60px color-mix(in srgb, var(--card-accent) 15%, transparent);
+}
+
+.compare-card__accent {
+  height: 4px;
+  width: 100%;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.compare-card__title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  padding: 24px 24px 4px;
+}
+
+.compare-card__section {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.compare-card__section:first-of-type {
+  border-top: none;
+}
+
+.compare-card__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.compare-card__text {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.compare-card__text--accent {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.compare-card__text--small {
+  font-size: 0.84rem;
+  line-height: 1.7;
+}
+
+/* ── Match Score Ring ── */
+.compare-match-ring {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto;
+}
+
+.compare-match-ring__svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.compare-match-ring__bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 6;
+}
+
+.compare-match-ring__progress {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.compare-match-ring__value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+/* ── Salary Bar ── */
+.compare-salary__bar-track {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.compare-salary__bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.compare-salary__bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25));
+  border-radius: var(--radius-full);
+}
+
+.compare-salary__labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.compare-salary__range {
+  color: var(--text-muted);
+}
+
+.compare-salary__avg {
+  font-weight: 700;
+}
+
+/* ── Job Growth ── */
+.compare-growth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compare-growth__value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.compare-growth__period {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* ── Stars ── */
+.compare-stars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.compare-star {
+  display: inline-flex;
+}
+
+.compare-stars__val {
+  margin-left: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ── Remote ── */
+.compare-remote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ── Skill Tags ── */
+.compare-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.compare-tag {
+  padding: 5px 14px;
+  border: 1px solid;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all var(--transition-fast);
+}
+
+.compare-tag:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+/* ── Pros / Cons List ── */
+.compare-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compare-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.compare-list li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── Radar Chart ── */
+.compare-radar {
+  margin-bottom: 56px;
+  text-align: center;
+}
+
+.compare-radar__card {
+  padding: 40px 24px;
+  border-radius: var(--radius-xl);
+}
+
+.compare-radar__card:hover {
+  transform: none;
+}
+
+.radar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.radar-svg {
+  width: 100%;
+  max-width: 420px;
+}
+
+.radar-ring {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 0.5;
+}
+
+.radar-axis {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 0.5;
+}
+
+.radar-polygon {
+  fill-opacity: 0.12;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  transition: fill-opacity var(--transition-normal);
+}
+
+.radar-polygon:hover {
+  fill-opacity: 0.22;
+}
+
+.radar-dot {
+  stroke: #0a0a1a;
+  stroke-width: 1.5;
+  transition: r var(--transition-fast);
+}
+
+.radar-dot:hover {
+  r: 6;
+}
+
+.radar-label {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.radar-legend {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.radar-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.radar-legend__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* ── AI Recommendation ── */
+.compare-ai {
+  margin-bottom: 24px;
+}
+
+.compare-ai__card {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 32px;
+  border-radius: var(--radius-xl);
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  overflow: hidden;
+}
+
+/* gradient border trick */
+.compare-ai__card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-xl);
+  padding: 2px;
+  background: var(--gradient-primary);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* subtle shimmer */
+.compare-ai__card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(0, 212, 255, 0.04) 45%,
+    rgba(124, 58, 237, 0.04) 55%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 6s linear infinite;
+  pointer-events: none;
+}
+
+.compare-ai__icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: float 5s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.compare-ai__content {
+  position: relative;
+  z-index: 1;
+}
+
+.compare-ai__title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.compare-ai__text {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.compare-ai__text strong {
+  -webkit-text-fill-color: initial;
+}
+
+/* ── Spacer ── */
+.compare-spacer {
+  height: 40px;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .compare-grid {
+    grid-template-columns: 1fr;
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .compare-header {
+    padding: 32px 0 16px;
+  }
+
+  .compare-selectors__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .compare-selector {
+    min-width: 0;
+  }
+
+  .compare-ai__card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .compare-card__section {
+    padding: 14px 18px;
+  }
+
+  .compare-card__title {
+    padding: 20px 18px 4px;
+  }
+
+  .radar-svg {
+    max-width: 320px;
+  }
+
+  .radar-legend {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .compare-card__text--small {
+    font-size: 0.8rem;
+  }
+
+  .radar-svg {
+    max-width: 260px;
+  }
+
+  .radar-label {
+    font-size: 9px;
+  }
+}
