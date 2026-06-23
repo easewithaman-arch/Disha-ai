@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { askDishaStream, initChat, resetChat, isApiKeyConfigured } from '../services/gemini'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import './Mentor.css'
 
@@ -8,7 +9,7 @@ const quickPrompts = [
   'Compare tech vs design careers',
   'What skills should I learn first?',
   'Help me plan my semester',
-  'Industry trends in 2025',
+  'What are the top industry trends right now?',
 ]
 
 const topics = [
@@ -19,70 +20,16 @@ const topics = [
   { label: 'Interview Prep', icon: '🎤' },
 ]
 
-const initialMessages = [
-  {
-    id: 1,
-    role: 'ai',
-    text: 'Hello! I\'m your DISHA AI Mentor. I\'ve analyzed your profile and I\'m ready to guide you through your career exploration journey. What would you like to discuss today? 🚀',
-    time: '10:00 AM',
-  },
-  {
-    id: 2,
-    role: 'user',
-    text: 'What career path would you recommend for someone who loves both coding and design?',
-    time: '10:02 AM',
-  },
-  {
-    id: 3,
-    role: 'ai',
-    text: `Great question! Based on your profile showing strong analytical skills (90%) and creative interests, I'd recommend exploring these hybrid paths:
+const WELCOME_MESSAGE = `Hello! I'm your **DISHA AI Mentor** 🚀
 
-**1. UX Engineering** — Combines coding with user experience design. You'd build interactive interfaces while applying design thinking.
+I'm here to help you explore career paths, analyze your skills, and plan your future. Here's what I can help with:
 
-**2. Creative Technology** — Work at the intersection of art and technology, building interactive installations, generative art, or AR/VR experiences.
+• 🧭 **Career exploration** — discover paths that match your interests
+• 📊 **Skill gap analysis** — see what you need to learn
+• 🎓 **Education planning** — courses, certifications, degrees
+• 💡 **Industry insights** — trends, salaries, and growth data
 
-**3. Product Design** — A more strategic role where you design and prototype digital products, requiring both technical understanding and design sensibility.
-
-Would you like me to dive deeper into any of these paths?`,
-    time: '10:02 AM',
-  },
-  {
-    id: 4,
-    role: 'user',
-    text: 'Tell me more about UX Engineering',
-    time: '10:05 AM',
-  },
-  {
-    id: 5,
-    role: 'ai',
-    text: `UX Engineering is an exciting and rapidly growing field! Here's a detailed breakdown:
-
-**📊 Market Overview:**
-• Average Salary: $110K – $165K
-• Job Growth: 25% (Much faster than average)
-• Remote-friendly: Yes, highly
-
-**🛠 Key Skills Needed:**
-• Frontend Development (React, Vue, Angular)
-• Design Systems & Component Libraries
-• Prototyping Tools (Figma, Framer)
-• Accessibility & Performance
-• User Research & Testing
-
-**🎓 Recommended Path:**
-1. Master HTML/CSS/JavaScript
-2. Learn a frontend framework
-3. Study UX design principles
-4. Build a portfolio of interactive projects
-5. Contribute to design systems
-
-Based on your current skills, you're about 68% ready for this career. Should I create a personalized learning roadmap?`,
-    time: '10:06 AM',
-  },
-]
-
-const simulatedResponse =
-  "That's an excellent question! Let me analyze this based on your profile data and current industry trends. I'll have a detailed response for you shortly. In the meantime, you can explore the Career Dashboard for related insights."
+What would you like to explore today?`
 
 function formatMessage(text) {
   const parts = []
@@ -90,12 +37,10 @@ function formatMessage(text) {
 
   lines.forEach((line, li) => {
     let processed = line
-
-    // bold
     processed = processed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    processed = processed.replace(/`([^`]+)`/g, '<code>$1</code>')
 
     if (li > 0) parts.push(<br key={`br-${li}`} />)
-
     parts.push(
       <span key={`line-${li}`} dangerouslySetInnerHTML={{ __html: processed }} />
     )
@@ -133,33 +78,79 @@ function SendIcon() {
   )
 }
 
+function RefreshIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 2v6h-6" />
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+      <path d="M3 22v-6h6" />
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+    </svg>
+  )
+}
+
 export default function Mentor() {
-  const [messages, setMessages] = useState(initialMessages)
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      role: 'ai',
+      text: WELCOME_MESSAGE,
+      time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    },
+  ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [streamingId, setStreamingId] = useState(null)
   const [activeTopic, setActiveTopic] = useState('Career Guidance')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [error, setError] = useState(null)
   const chatEndRef = useRef(null)
   const inputRef = useRef(null)
-  const nextId = useRef(initialMessages.length + 1)
+  const nextId = useRef(2)
+  const chatInitialized = useRef(false)
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  }, [])
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages, isTyping])
+  }, [messages, isTyping, scrollToBottom])
+
+  // Initialize chat session on mount (no API call — just prepares the session)
+  useEffect(() => {
+    if (chatInitialized.current) return
+    chatInitialized.current = true
+
+    if (isApiKeyConfigured()) {
+      try {
+        initChat()
+      } catch (e) {
+        console.error('Failed to init chat:', e)
+      }
+    }
+  }, [])
 
   const getTimeString = () => {
-    const now = new Date()
-    return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    return new Date().toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
   }
 
-  const sendMessage = (text) => {
+  const sendMessage = async (text) => {
     const trimmed = text.trim()
     if (!trimmed || isTyping) return
 
+    if (!isApiKeyConfigured()) {
+      setError('API key not configured. Add VITE_GEMINI_API_KEY to .env and restart.')
+      return
+    }
+
+    setError(null)
+
+    // Add user message
     const userMsg = {
       id: nextId.current++,
       role: 'user',
@@ -170,16 +161,62 @@ export default function Mentor() {
     setInput('')
     setIsTyping(true)
 
-    setTimeout(() => {
-      const aiMsg = {
-        id: nextId.current++,
-        role: 'ai',
-        text: simulatedResponse,
-        time: getTimeString(),
+    // Create a placeholder AI message for streaming
+    const aiMsgId = nextId.current++
+    const aiMsg = {
+      id: aiMsgId,
+      role: 'ai',
+      text: '',
+      time: getTimeString(),
+      isStreaming: true,
+    }
+    setMessages((prev) => [...prev, aiMsg])
+    setStreamingId(aiMsgId)
+
+    try {
+      const finalText = await askDishaStream(trimmed, (partialText) => {
+        // Update the AI message with each chunk — text appears in real time
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMsgId ? { ...msg, text: partialText } : msg
+          )
+        )
+      })
+
+      // Mark as complete
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMsgId
+            ? { ...msg, text: finalText, isStreaming: false, time: getTimeString() }
+            : msg
+        )
+      )
+    } catch (err) {
+      console.error('Gemini API error:', err)
+
+      let errorText = "I'm sorry, I encountered an issue. Please try again."
+
+      if (err.message === 'API_KEY_MISSING') {
+        errorText = "⚠️ API key is not configured. Please add it to `.env` and restart."
+      } else if (err.message === 'API_KEY_INVALID') {
+        errorText = "⚠️ API key is invalid. Get a valid key from https://aistudio.google.com/apikey"
+      } else if (err.message?.includes('429') || err.message?.includes('quota')) {
+        errorText = "⏳ I'm being rate-limited right now. Please wait a few seconds and try again."
       }
-      setMessages((prev) => [...prev, aiMsg])
-      setIsTyping(false)
-    }, 1500)
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMsgId
+            ? { ...msg, text: errorText, isStreaming: false }
+            : msg
+        )
+      )
+      setError('Request failed — please try again in a moment.')
+    }
+
+    setIsTyping(false)
+    setStreamingId(null)
+    inputRef.current?.focus()
   }
 
   const handleSubmit = (e) => {
@@ -197,6 +234,32 @@ export default function Mentor() {
   const handleQuickPrompt = (prompt) => {
     sendMessage(prompt)
     if (window.innerWidth < 900) setSidebarOpen(false)
+  }
+
+  const handleNewChat = () => {
+    resetChat()
+    chatInitialized.current = false
+    setMessages([
+      {
+        id: 1,
+        role: 'ai',
+        text: WELCOME_MESSAGE,
+        time: getTimeString(),
+      },
+    ])
+    setError(null)
+    nextId.current = 2
+    setStreamingId(null)
+    setIsTyping(false)
+
+    if (isApiKeyConfigured()) {
+      try {
+        initChat()
+        chatInitialized.current = true
+      } catch (e) {
+        console.error('Failed to reinit chat:', e)
+      }
+    }
   }
 
   return (
@@ -223,14 +286,12 @@ export default function Mentor() {
         </svg>
       </button>
 
-      {/* Overlay for mobile */}
       {sidebarOpen && (
         <div className="mentor-overlay" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
       <aside className={`mentor-sidebar${sidebarOpen ? ' open' : ''}`}>
-        {/* Profile Card */}
         <div className="mentor-profile-card">
           <div className="mentor-avatar">
             <BrainIcon />
@@ -241,11 +302,10 @@ export default function Mentor() {
             Online
           </span>
           <p className="mentor-bio">
-            I&rsquo;m your AI career mentor. Ask me anything about career paths, skills, industry trends, or education planning.
+            Your AI career mentor powered by Google Gemini. Ask anything about careers, skills, or education.
           </p>
         </div>
 
-        {/* Quick Prompts */}
         <div className="mentor-section">
           <h4 className="mentor-section-title">Quick Prompts</h4>
           <div className="mentor-prompts">
@@ -254,6 +314,7 @@ export default function Mentor() {
                 key={p}
                 className="mentor-prompt-chip"
                 onClick={() => handleQuickPrompt(p)}
+                disabled={isTyping}
               >
                 {p}
               </button>
@@ -261,7 +322,6 @@ export default function Mentor() {
           </div>
         </div>
 
-        {/* Topics */}
         <div className="mentor-section">
           <h4 className="mentor-section-title">Topics</h4>
           <div className="mentor-topics">
@@ -269,7 +329,10 @@ export default function Mentor() {
               <button
                 key={t.label}
                 className={`mentor-topic-btn${activeTopic === t.label ? ' active' : ''}`}
-                onClick={() => setActiveTopic(t.label)}
+                onClick={() => {
+                  setActiveTopic(t.label)
+                  handleQuickPrompt(`Tell me about ${t.label.toLowerCase()}`)
+                }}
               >
                 <span className="mentor-topic-icon">{t.icon}</span>
                 {t.label}
@@ -277,11 +340,17 @@ export default function Mentor() {
             ))}
           </div>
         </div>
+
+        <div className="mentor-section">
+          <button className="mentor-new-chat-btn" onClick={handleNewChat} disabled={isTyping}>
+            <RefreshIcon />
+            New Conversation
+          </button>
+        </div>
       </aside>
 
       {/* Chat Area */}
       <main className="mentor-chat-area">
-        {/* Header */}
         <div className="mentor-chat-header">
           <div className="mentor-chat-header-left">
             <div className="mentor-avatar-sm">
@@ -289,7 +358,9 @@ export default function Mentor() {
             </div>
             <div>
               <h2 className="mentor-chat-title">DISHA Mentor</h2>
-              <span className="mentor-chat-subtitle">AI Career Advisor · Always available</span>
+              <span className="mentor-chat-subtitle">
+                Powered by Gemini AI · Always available
+              </span>
             </div>
           </div>
           <Link to="/dashboard" className="mentor-dashboard-link">
@@ -306,39 +377,29 @@ export default function Mentor() {
         {/* Messages */}
         <div className="mentor-messages">
           {messages.map((msg) => (
-            <div key={msg.id} className={`mentor-msg mentor-msg-${msg.role}`}>
+            <div key={msg.id} className={`mentor-msg mentor-msg-${msg.role} animate-fade-in`}>
               {msg.role === 'ai' && (
                 <div className="mentor-msg-avatar">
                   <BrainIcon />
                 </div>
               )}
               <div className="mentor-msg-content">
-                <div className={`mentor-msg-bubble mentor-msg-bubble-${msg.role}`}>
+                <div className={`mentor-msg-bubble mentor-msg-bubble-${msg.role} ${msg.isStreaming ? 'mentor-msg-streaming' : ''}`}>
                   {formatMessage(msg.text)}
+                  {msg.isStreaming && <span className="mentor-cursor">▍</span>}
                 </div>
                 <span className="mentor-msg-time">{msg.time}</span>
               </div>
             </div>
           ))}
 
-          {/* Typing indicator */}
-          {isTyping && (
-            <div className="mentor-msg mentor-msg-ai">
-              <div className="mentor-msg-avatar">
-                <BrainIcon />
-              </div>
-              <div className="mentor-msg-content">
-                <div className="mentor-msg-bubble mentor-msg-bubble-ai mentor-typing-bubble">
-                  <div className="mentor-typing-dots">
-                    <span className="mentor-dot" />
-                    <span className="mentor-dot" />
-                    <span className="mentor-dot" />
-                  </div>
-                  <span className="mentor-typing-label">AI is typing</span>
-                </div>
-              </div>
+          {error && (
+            <div className="mentor-error-notice animate-fade-in">
+              <span>⚠️ {error}</span>
+              <button onClick={() => setError(null)}>Dismiss</button>
             </div>
           )}
+
           <div ref={chatEndRef} />
         </div>
 
@@ -354,6 +415,7 @@ export default function Mentor() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isTyping}
+              autoFocus
             />
             <button
               type="submit"
@@ -364,6 +426,9 @@ export default function Mentor() {
               <SendIcon />
             </button>
           </div>
+          <p className="mentor-input-hint">
+            Powered by Google Gemini AI · Responses may not always be accurate
+          </p>
         </form>
       </main>
     </div>

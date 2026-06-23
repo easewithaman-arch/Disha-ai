@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { UserProvider } from './context/UserContext'
 import Navbar from './components/Navbar'
 import Landing from './pages/Landing'
 import Onboarding from './pages/Onboarding'
@@ -9,7 +10,7 @@ import Mentor from './pages/Mentor'
 
 export default function App() {
   return (
-    <>
+    <UserProvider>
       <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -19,6 +20,6 @@ export default function App() {
         <Route path="/skills" element={<SkillGap />} />
         <Route path="/mentor" element={<Mentor />} />
       </Routes>
-    </>
+    </UserProvider>
   )
 }

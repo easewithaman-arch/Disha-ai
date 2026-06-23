@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
+import { generateCareerPaths } from '../services/gemini';
 import './Onboarding.css';
 
 const STEPS = [
@@ -147,8 +149,10 @@ const StepIcon = ({ icon, filled }) => {
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { setProfile, setCareerPaths } = useUser();
   const [currentStep, setCurrentStep] = useState(1);
   const [fadeClass, setFadeClass] = useState('onb-fade-in');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -233,8 +237,30 @@ export default function Onboarding() {
     }));
   };
 
-  const handleLaunch = () => {
-    navigate('/dashboard');
+  const handleLaunch = async () => {
+    setIsGenerating(true);
+    try {
+      const profile = {
+        name: formData.fullName,
+        age: formData.age,
+        education: formData.education,
+        location: formData.location,
+        interests: formData.interests,
+        skills: formData.skills,
+        dream: formData.dreamCareer,
+        workStyle: formData.workStyle,
+        priority: formData.priority,
+      };
+      setProfile(profile);
+      const result = await generateCareerPaths(profile);
+      setCareerPaths(result);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error generating career paths:', error);
+      navigate('/dashboard');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const renderStep1 = () => (
@@ -724,14 +750,25 @@ export default function Onboarding() {
                   </svg>
                 </button>
               ) : (
-                <button type="button" className="onb-btn onb-btn-launch" onClick={handleLaunch}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                    <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-                  </svg>
-                  Launch My Future Explorer
+                <button type="button" className="onb-btn onb-btn-launch" onClick={handleLaunch} disabled={isGenerating}>
+                  {isGenerating ? (
+                    <>
+                      <svg className="onb-spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                      </svg>
+                      Generating Your Futures...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                        <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                      </svg>
+                      Launch My Future Explorer
+                    </>
+                  )}
                 </button>
               )}
             </div>

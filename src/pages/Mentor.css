@@ -540,6 +540,96 @@
   }
 }
 
+/* ---- New Chat Button ---- */
+.mentor-new-chat-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  color: #c4b5fd;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mentor-new-chat-btn:hover {
+  background: rgba(124, 58, 237, 0.2);
+  border-color: rgba(124, 58, 237, 0.4);
+  color: #e0d7ff;
+}
+
+.mentor-new-chat-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---- Error Notice ---- */
+.mentor-error-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 24px;
+  padding: 10px 16px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  color: #fca5a5;
+  font-size: 0.82rem;
+}
+
+.mentor-error-notice button {
+  background: none;
+  border: none;
+  color: #fca5a5;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+
+/* ---- Input Hint ---- */
+.mentor-input-hint {
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.5);
+  margin-top: 6px;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Code Formatting ---- */
+.mentor-msg-bubble code {
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85em;
+  color: #67e8f9;
+}
+
+/* ---- Streaming Cursor ---- */
+.mentor-cursor {
+  display: inline-block;
+  color: var(--accent-cyan);
+  font-weight: 700;
+  animation: blink-cursor 0.8s step-end infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.mentor-msg-streaming {
+  border-color: rgba(0, 212, 255, 0.2);
+}
+
 @media (max-width: 600px) {
   .mentor-chat-header-left .mentor-avatar-sm {
     display: none;

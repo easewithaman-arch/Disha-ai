@@ -491,6 +491,9 @@ export default function Landing() {
                 One Student. Many Futures.<br />
                 AI-powered career exploration for the next generation.
               </p>
+              <p className="landing-footer__tagline" style={{ marginTop: '8px', fontSize: '0.82rem', opacity: 0.7 }}>
+                Founded by <strong style={{ color: '#c4b5fd' }}>Aman Shukla</strong>
+              </p>
               {/* Social */}
               <div className="landing-footer__social">
                 {/* Twitter / X */}
@@ -536,7 +539,7 @@ export default function Landing() {
           </div>
 
           <div className="landing-footer__bottom">
-            <p>© {new Date().getFullYear()} DISHA AI. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} DISHA AI · Founded by Aman Shukla. All rights reserved.</p>
             <p className="landing-footer__built">
               Built with
               <svg width="14" height="14" viewBox="0 0 14 14" fill="#ec4899" style={{ margin: '0 4px', verticalAlign: 'middle' }}>
